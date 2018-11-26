@@ -1,36 +1,56 @@
 Example swift project for running in on Linux for CLion.
 
-Set a break point 
+The project doesn't show variables if debugged on CLion but does via Swifts lldb:
 
-Currently it seems that CLion cannot show variables during debug. Build and try.
+Make sure you have `SWIFT_SDK` set to your swift build path or manually update the reference in CMakeLists.txt
 
-Set SWIFT_SDK to the path of the swift toolchain.
 
-# Debug
-When debugging in Linux CLion appears to be unable to see frame variables or global variables. It appears to work fine 
-on macOS.
+# swift and lldb
+```
+$SWIFT_SDK/usr/bin/swift  build --verbose
+lsb_release -r
+/home/jlawson/build/swift-build/swift/swift-nightly-install/usr/bin/swiftc --driver-mode=swift -L /home/jlawson/build/swift-build/swift/swift-nightly-install/usr/lib/swift/pm/4_2 -lPackageDescription -swift-version 4.2 -I /home/jlawson/build/swift-build/swift/swift-nightly-install/usr/lib/swift/pm/4_2 -sdk / /home/jlawson/Downloads/App/Package.swift -fileno 7
+/home/jlawson/build/swift-build/swift/swift-nightly-install/usr/bin/swiftc -module-name App -incremental -emit-dependencies -emit-module -emit-module-path /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/App.swiftmodule -output-file-map /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/App.build/output-file-map.json -c /home/jlawson/Downloads/App/Sources/main.swift -I /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug -target x86_64-unknown-linux -swift-version 4.2 -enable-batch-mode -index-store-path /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/index/store -sdk / -Onone -g -enable-testing -j12 -DSWIFT_PACKAGE -DDEBUG -module-cache-path /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/ModuleCache -Xfrontend -color-diagnostics
+/home/jlawson/build/swift-build/swift/swift-nightly-install/usr/bin/swiftc -sdk / -g -L /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug -o /home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/App -module-name App -emit-executable -Xlinker '-rpath=$ORIGIN' @/home/jlawson/Downloads/App/.build/x86_64-unknown-linux/debug/App.product/Objects.LinkFileList
 
-Related issues: 
+$SWIFT_SDK/usr/bin/swift --version
+Swift version 5.0-dev (LLVM dcb9eb74a7, Clang 95cdf7c9af, Swift bc9c876ee8)
+Target: x86_64-unknown-linux-gnu
+```
 
-  1. [Debug swift unit test display: "No symbol info"](https://github.com/vadimcn/vscode-lldb/issues/27)
-  1. [Make file level variables "frame" variables when you aren't in an explicit function](https://bugs.swift.org/browse/SR-4638)
-  1. [Unable to Import Foundation](https://bugs.swift.org/browse/SR-3648)
-  1. [Importing a modulemapped C library in REPL throws an error](https://bugs.swift.org/browse/SR-5524)
+Try to debug the Linux build:
 
-CLion Feature info:
+```
+ $SWIFT_SDK/usr/bin/lldb .build/debug/App
+ (lldb) target create ".build/debug/App"
+ Current executable set to '.build/debug/App' (x86_64).
+ (lldb) breakpoint set -f main.swift -l 19
+ Breakpoint 1: where = App`App.d() -> Swift.String + 178 at main.swift:19:9, address = 0x0000000000001462
+ (lldb) run
+ Process 15780 launched: '/home/jlawson/Downloads/App/.build/debug/App' (x86_64)
+ Process 15780 stopped
+ * thread #1, name = 'App', stop reason = breakpoint 1.1
+     frame #0: 0x0000555555555462 App`d() at main.swift:19:9
+    16   public func d() -> String {
+    17       let a = "Hello";
+    18       var b = a + " ";
+ -> 19       b = b + "World";
+    20       let c = b + "!"
+    21   
+    22       return c
+ Target 0: (App) stopped.
+ (lldb) fr v
+ (String) a = "Hello"
+ (String) b = "Hello "
+ (String) c = ""
+```
 
-  1. [Swift plugin for CLion](https://blog.jetbrains.com/clion/2015/12/swift-plugin-for-clion/)
-  1. [CLion Swift Support](https://www.jetbrains.com/help/clion/swift.html)
-  1. [Youtrack: Swift debugger does not show variable values when importing KituraNet in CLion
-](https://youtrack.jetbrains.com/issue/CPP-9765)
-  1. [Github: Swift debugger does not show variable values when importing KituraNet in CLion](https://github.com/IBM-Swift/Kitura-net/issues/191)
-  
-  
-  LLDB info:
-  
-  1. [Debugging Swift code with LLDB](https://medium.com/flawless-app-stories/debugging-swift-code-with-lldb-b30c5cf2fd49)
-  1. [Create Swift class instance variable with lldb, versus Objective-C](https://stackoverflow.com/questions/50879175/create-swift-class-instance-variable-with-lldb-versus-objective-c)
-  
-I don't know if it is an lldb context thing or what.
+# CLion and CMake
 
-![Image](Screenshot_2018-11-12_15-44-43.png)
+After building there are no frame variables
+
+![Image](Screenshot_2018-11-26_17-22-45.png)
+
+The Variables window cannot find any:
+
+![Image](Screenshot_2018-11-26_17-23-20.png)
