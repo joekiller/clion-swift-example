@@ -54,3 +54,8 @@ After building there are no frame variables
 The Variables window cannot find any:
 
 ![Image](Screenshot_2018-11-26_17-23-20.png)
+
+
+# Debugging on macOS
+
+Building a debugging this on macOS seems fine. With the latest nightly swift snapshot.
